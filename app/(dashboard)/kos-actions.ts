@@ -6,9 +6,11 @@ import { headers } from "next/headers";
 import { canCreateKosData } from "@/lib/auth/roles";
 import { MEASUREMENT_METHOD, ROUTE_MODE, TARGET_DESTINATION } from "@/lib/constants";
 import type { KosCrudActionState } from "@/lib/kos/action-state";
+import { normalizeAreaName, normalizeKosName } from "@/lib/kos/normalize-text";
 import { kosDataFormSchema, kosRecordIdSchema } from "@/lib/kos/validation";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database";
+import type { DataQualityStatus } from "@/types/kos";
 import type { KosDataFormValues } from "@/lib/kos/validation";
 import type { UserProfile, UserRole } from "@/types/users";
 
@@ -54,7 +56,24 @@ export async function createKosDataAction(
     };
   }
 
-  const payload = toKosDataInsertPayload(parsed.data, profile.id);
+  const dataQualityStatus = await getKosDataQualityStatus(
+    supabase,
+    parsed.data.namaKos,
+  );
+
+  if (dataQualityStatus.status === null) {
+    return {
+      status: "error",
+      message: dataQualityStatus.error,
+      values: parsed.data,
+    };
+  }
+
+  const payload = toKosDataInsertPayload(
+    parsed.data,
+    profile.id,
+    dataQualityStatus.status,
+  );
   const { data: insertedRow, error: insertError } = await supabase
     .from("kos_data")
     .insert(payload)
@@ -155,9 +174,29 @@ export async function updateKosDataAction(
     };
   }
 
+  const dataQualityStatus = await getKosDataQualityStatus(
+    supabase,
+    parsed.data.namaKos,
+    idResult.data.id,
+  );
+
+  if (dataQualityStatus.status === null) {
+    return {
+      status: "error",
+      message: dataQualityStatus.error,
+      values: parsed.data,
+    };
+  }
+
   const { data: updatedRow, error: updateError } = await supabase
     .from("kos_data")
-    .update(toKosDataUpdatePayload(parsed.data, profile.id))
+    .update(
+      toKosDataUpdatePayload(
+        parsed.data,
+        profile.id,
+        dataQualityStatus.status,
+      ),
+    )
     .eq("id", idResult.data.id)
     .eq("is_deleted", false)
     .select(
@@ -355,9 +394,11 @@ async function getActionContext(): Promise<ActionContextResult> {
 }
 
 function formDataToKosValues(formData: FormData): KosDataFormValues {
+  const normalizedArea = normalizeAreaName(String(formData.get("area") ?? ""));
+
   return {
-    namaKos: String(formData.get("namaKos") ?? ""),
-    area: String(formData.get("area") ?? ""),
+    namaKos: normalizeKosName(String(formData.get("namaKos") ?? "")),
+    area: normalizedArea ?? "",
     jarakMeter: Number(formData.get("jarakMeter") ?? Number.NaN),
     googleMapsUrl: String(formData.get("googleMapsUrl") ?? ""),
     catatan: String(formData.get("catatan") ?? ""),
@@ -373,6 +414,7 @@ function toNullableText(value: string): string | null {
 function toKosDataInsertPayload(
   values: KosDataFormValues,
   userId: string,
+  dataQualityStatus: DataQualityStatus = "valid",
 ): Database["public"]["Tables"]["kos_data"]["Insert"] {
   return {
     nama_kos: values.namaKos,
@@ -383,7 +425,7 @@ function toKosDataInsertPayload(
     titik_tujuan: TARGET_DESTINATION,
     metode_pengukuran: MEASUREMENT_METHOD,
     catatan: toNullableText(values.catatan),
-    data_quality_status: "valid",
+    data_quality_status: dataQualityStatus,
     created_by: userId,
     updated_by: userId,
     is_deleted: false,
@@ -393,6 +435,7 @@ function toKosDataInsertPayload(
 function toKosDataUpdatePayload(
   values: KosDataFormValues,
   userId: string,
+  dataQualityStatus: DataQualityStatus = "valid",
 ): Database["public"]["Tables"]["kos_data"]["Update"] {
   return {
     nama_kos: values.namaKos,
@@ -403,7 +446,50 @@ function toKosDataUpdatePayload(
     mode_rute: ROUTE_MODE,
     titik_tujuan: TARGET_DESTINATION,
     metode_pengukuran: MEASUREMENT_METHOD,
+    data_quality_status: dataQualityStatus,
     updated_by: userId,
+  };
+}
+
+type KosDataQualityStatusResult = Readonly<
+  | {
+      status: DataQualityStatus;
+      error: null;
+    }
+  | {
+      status: null;
+      error: string;
+    }
+>;
+
+async function getKosDataQualityStatus(
+  supabase: SupabaseServerClient,
+  normalizedKosName: string,
+  currentRecordId?: string,
+): Promise<KosDataQualityStatusResult> {
+  const { data, error } = await supabase
+    .from("kos_data")
+    .select("id, nama_kos")
+    .eq("is_deleted", false);
+
+  if (error) {
+    return {
+      status: null,
+      error: `Gagal memeriksa duplikasi nama kos. ${error.message}`,
+    };
+  }
+
+  const hasDuplicate = (data ?? []).some((record) => {
+    if (record.id === currentRecordId) {
+      return false;
+    }
+
+    return normalizeKosName(record.nama_kos) === normalizedKosName;
+  });
+
+  return {
+    status: hasDuplicate ? "duplicate_suspected" : "valid",
+    error: null,
   };
 }
 

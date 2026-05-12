@@ -5,7 +5,6 @@ import {
   useEffect,
   useMemo,
   useTransition,
-  type BaseSyntheticEvent,
   type ReactNode,
 } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -103,14 +102,18 @@ export function KosDataForm({
     onSuccess?.(state.message);
   }, [mode, onSuccess, reset, state.message, state.status]);
 
-  function submitCurrentForm(event: BaseSyntheticEvent | undefined) {
-    const formElement = event?.currentTarget;
+  function submitCurrentForm(values: KosDataFormValues) {
+    const formData = new FormData();
 
-    if (!(formElement instanceof HTMLFormElement)) {
-      return;
+    if (recordId) {
+      formData.set("id", recordId);
     }
 
-    const formData = new FormData(formElement);
+    formData.set("namaKos", values.namaKos);
+    formData.set("area", values.area);
+    formData.set("jarakMeter", String(values.jarakMeter));
+    formData.set("googleMapsUrl", values.googleMapsUrl);
+    formData.set("catatan", values.catatan);
 
     startTransition(() => {
       formAction(formData);
@@ -120,7 +123,7 @@ export function KosDataForm({
   return (
     <form
       className={cn("space-y-5", className)}
-      onSubmit={handleSubmit((_values, event) => submitCurrentForm(event))}
+      onSubmit={handleSubmit((values) => submitCurrentForm(values))}
     >
       {recordId ? <input name="id" type="hidden" value={recordId} /> : null}
 
@@ -153,6 +156,7 @@ export function KosDataForm({
           error={
             errors.namaKos?.message ?? state.fieldErrors?.namaKos?.join(", ")
           }
+          helper="Nama kos akan otomatis dirapikan, contoh: wisma yolandaa menjadi Wisma Yolandaa."
           label="Nama Kos"
           name="namaKos"
         >
@@ -256,11 +260,13 @@ export function KosDataForm({
 function FieldShell({
   children,
   error,
+  helper,
   label,
   name,
 }: Readonly<{
   children: ReactNode;
   error?: string;
+  helper?: string;
   label: string;
   name: keyof KosDataFormInputValues;
 }>) {
@@ -269,6 +275,7 @@ function FieldShell({
       <Label htmlFor={name}>{label}</Label>
       {children}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {!error && helper ? <p className="text-xs text-slate-500">{helper}</p> : null}
     </div>
   );
 }
