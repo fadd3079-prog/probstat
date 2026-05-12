@@ -79,9 +79,7 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
       columnHelper.display({
         id: "no",
         header: "No",
-        cell: ({ row }) => (
-          <span className="font-mono text-slate-500">{row.index + 1}</span>
-        ),
+        cell: () => null,
       }),
       columnHelper.accessor("namaKos", {
         header: ({ column }) => (
@@ -361,18 +359,32 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
                   </TableCell>
                 </TableRow>
               ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                table.getRowModel().rows.map((row, visibleRowIndex) => {
+                  const pagination = table.getState().pagination;
+                  const displayNumber =
+                    pagination.pageIndex * pagination.pageSize +
+                    visibleRowIndex +
+                    1;
+
+                  return (
+                    <TableRow key={row.id}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {cell.column.id === "no" ? (
+                            <span className="font-mono text-slate-500">
+                              {displayNumber}
+                            </span>
+                          ) : (
+                            flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
