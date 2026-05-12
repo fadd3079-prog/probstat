@@ -33,6 +33,7 @@ export type Database = {
           is_active?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       kos_data: {
         Row: {
@@ -74,6 +75,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["kos_data"]["Insert"]>;
+        Relationships: [];
       };
       app_settings: {
         Row: {
@@ -93,6 +95,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["app_settings"]["Insert"]>;
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -112,6 +115,7 @@ export type Database = {
           table_name: string;
         };
         Update: never;
+        Relationships: [];
       };
       dataset_snapshots: {
         Row: {
@@ -135,6 +139,7 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["dataset_snapshots"]["Insert"]
         >;
+        Relationships: [];
       };
       report_exports: {
         Row: {
@@ -156,6 +161,7 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["report_exports"]["Insert"]>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
