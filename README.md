@@ -46,12 +46,21 @@ npm run typecheck
 npm run build
 ```
 
-## Milestone 1 Status
+## Milestone Status
 
-This repository currently contains the project foundation: Next.js App Router,
-Tailwind CSS, shadcn/ui, a desktop dashboard shell, placeholder dashboard
-routes, base domain types, Supabase config placeholders, and initial docs/env
-setup.
+Milestone 1 is complete: Next.js App Router, Tailwind CSS, shadcn/ui, a
+desktop dashboard shell, placeholder dashboard routes, base domain types, and
+initial docs/env setup.
 
-Supabase Auth, PostgreSQL schema, RLS, data input, statistics formulas, charts,
-and export generation are intentionally deferred to later milestones.
+Milestone 2 is complete: Supabase browser/server utilities, login UI, protected
+dashboard guard, database migration, RLS policies, role helpers, and Supabase
+setup documentation.
+
+Data input, statistics formulas, charts, and export generation are intentionally
+deferred to later milestones.
+
+## Supabase
+
+Read [docs/supabase-setup.md](docs/supabase-setup.md) before connecting a real
+project. Passwords are managed only by Supabase Auth. Public database tables do
+not store password values.

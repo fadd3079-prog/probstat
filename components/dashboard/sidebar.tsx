@@ -19,6 +19,7 @@ import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/types/users";
 
 type NavigationItem = Readonly<{
   label: string;
@@ -39,7 +40,7 @@ const navigationItems: NavigationItem[] = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ role }: Readonly<{ role: UserRole }>) {
   const pathname = usePathname();
 
   return (
@@ -58,7 +59,7 @@ export function DashboardSidebar() {
         </div>
         <div className="mt-4">
           <Badge variant="outline" className="border-slate-200 text-slate-600">
-            Desktop Academic Dashboard
+            Role: {role}
           </Badge>
         </div>
       </div>
@@ -89,14 +90,10 @@ export function DashboardSidebar() {
       </nav>
 
       <div className="border-t border-slate-200 p-4">
-        <button
-          type="button"
-          disabled
-          className="flex h-10 w-full cursor-not-allowed items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400"
-        >
+        <div className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400">
           <LogOut className="size-4" aria-hidden="true" />
-          <span>Logout</span>
-        </button>
+          <span>Logout tersedia di topbar</span>
+        </div>
       </div>
     </aside>
   );
