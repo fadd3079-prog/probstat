@@ -1,8 +1,8 @@
 import { AlertCircle, GraduationCap } from "lucide-react";
 import { login } from "./actions";
+import { LoginSubmitButton } from "@/components/auth/LoginSubmitButton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,10 +21,10 @@ type LoginPageProps = Readonly<{
 }>;
 
 const errorMessages: Record<string, string> = {
-  invalid: "Email atau password tidak sesuai.",
-  required: "Email dan password wajib diisi.",
+  invalid: "Email atau kata sandi tidak sesuai.",
+  required: "Email dan kata sandi wajib diisi.",
   missing_config:
-    "Supabase belum dikonfigurasi. Isi environment variables sebelum login.",
+    "Konfigurasi aplikasi belum lengkap. Hubungi admin aplikasi.",
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -44,11 +44,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
           <div className="space-y-1">
             <Badge variant="outline" className="border-slate-200 text-slate-600">
-              Supabase Auth
+              Akses Dashboard
             </Badge>
-            <CardTitle>Login Dashboard</CardTitle>
+            <CardTitle>Masuk Dashboard</CardTitle>
             <CardDescription>
-              Masuk menggunakan akun Supabase Auth yang dibuat untuk anggota
+              Masuk menggunakan akun yang telah terdaftar untuk anggota
               kelompok.
             </CardDescription>
           </div>
@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {errorMessage ? (
             <Alert variant="destructive" className="border-red-200 bg-red-50">
               <AlertCircle className="size-4" aria-hidden="true" />
-              <AlertTitle>Login gagal</AlertTitle>
+              <AlertTitle>Masuk gagal</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           ) : null}
@@ -78,7 +78,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Kata Sandi</Label>
               <Input
                 id="password"
                 name="password"
@@ -95,18 +95,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 defaultChecked
                 className="size-4 rounded border-slate-300"
               />
-              Ingat sesi di browser ini
+              Ingat saya di perangkat ini
             </label>
 
-            <Button type="submit" className="w-full">
-              Masuk
-            </Button>
+            <LoginSubmitButton />
           </form>
 
           <p className="text-xs leading-5 text-slate-500">
-            Password tidak disimpan di tabel publik. Kredensial dikelola oleh
-            Supabase Auth, sedangkan role aplikasi disimpan di tabel
-            <span className="font-mono"> profiles</span>.
+            Kata sandi dikelola secara aman dan tidak ditampilkan di
+            dashboard.
           </p>
         </CardContent>
       </Card>

@@ -7,8 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  MEASUREMENT_METHOD,
-  ROUTE_MODE,
+  MEASUREMENT_METHOD_LABEL,
+  ROUTE_MODE_LABEL,
   TARGET_DESTINATION,
 } from "@/lib/constants";
 
@@ -16,9 +16,9 @@ const methodologyItems = [
   ["Unit observasi", "Kos-kosan"],
   ["Variabel", "Jarak kos ke gerbang kampus"],
   ["Satuan", "Meter"],
-  ["Mode rute", ROUTE_MODE],
+  ["Mode rute", ROUTE_MODE_LABEL],
   ["Titik tujuan", TARGET_DESTINATION],
-  ["Metode", MEASUREMENT_METHOD],
+  ["Metode ukur", MEASUREMENT_METHOD_LABEL],
   ["Sampling", "Purposive convenience sampling"],
 ] as const;
 
@@ -30,11 +30,11 @@ export function MethodologyCard() {
           <div>
             <CardTitle>Metodologi Penelitian</CardTitle>
             <CardDescription>
-              Konsistensi akademik untuk pengumpulan data jarak kos.
+              Acuan yang digunakan dalam pengumpulan data.
             </CardDescription>
           </div>
           <Badge variant="outline" className="border-slate-200 text-slate-600">
-            Fixed
+            Acuan tetap
           </Badge>
         </div>
       </CardHeader>

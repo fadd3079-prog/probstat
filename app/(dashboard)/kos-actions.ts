@@ -41,7 +41,7 @@ export async function createKosDataAction(
   if (!canCreateKosData(profile.role)) {
     return {
       status: "error",
-      message: "Role viewer tidak dapat menambah data kos.",
+      message: "Akses Anda tidak dapat menambah data kos.",
     };
   }
 
@@ -50,7 +50,7 @@ export async function createKosDataAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Data belum valid. Periksa kembali field yang ditandai.",
+      message: "Data belum valid. Periksa kembali isian yang ditandai.",
       fieldErrors: parsed.error.flatten().fieldErrors,
       values: formDataToKosValues(formData),
     };
@@ -106,8 +106,8 @@ export async function createKosDataAction(
   return {
     status: "success",
     message: auditWarning
-      ? `Data kos berhasil dibuat. ${auditWarning}`
-      : "Data kos berhasil dibuat dan tercatat di audit log.",
+      ? `Data kos berhasil ditambahkan. ${auditWarning}`
+      : "Data kos berhasil ditambahkan.",
   };
 }
 
@@ -140,7 +140,7 @@ export async function updateKosDataAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Data belum valid. Periksa kembali field yang ditandai.",
+      message: "Data belum valid. Periksa kembali isian yang ditandai.",
       fieldErrors: parsed.error.flatten().fieldErrors,
       values: formDataToKosValues(formData),
     };
@@ -229,7 +229,7 @@ export async function updateKosDataAction(
     status: "success",
     message: auditWarning
       ? `Data kos berhasil diperbarui. ${auditWarning}`
-      : "Data kos berhasil diperbarui dan tercatat di audit log.",
+      : "Data kos berhasil diperbarui.",
   };
 }
 
@@ -320,8 +320,8 @@ export async function softDeleteKosDataAction(
   return {
     status: "success",
     message: auditWarning
-      ? `Data kos berhasil dihapus secara soft delete. ${auditWarning}`
-      : "Data kos berhasil dihapus secara soft delete dan tercatat di audit log.",
+      ? `Data kos berhasil dihapus dari dataset. ${auditWarning}`
+      : "Data kos berhasil dihapus dari dataset.",
   };
 }
 
@@ -334,7 +334,7 @@ async function getActionContext(): Promise<ActionContextResult> {
       error: {
         status: "error",
         message:
-          "Supabase belum dikonfigurasi. Pastikan environment variables production sudah diisi di Vercel.",
+          "Konfigurasi aplikasi belum lengkap. Hubungi admin aplikasi.",
       },
     };
   }
@@ -348,7 +348,7 @@ async function getActionContext(): Promise<ActionContextResult> {
       context: null,
       error: {
         status: "error",
-        message: "Sesi login tidak valid. Silakan login ulang dari website.",
+        message: "Akses masuk tidak valid. Silakan masuk ulang.",
       },
     };
   }
@@ -365,7 +365,7 @@ async function getActionContext(): Promise<ActionContextResult> {
       error: {
         status: "error",
         message:
-          "Profile aplikasi tidak ditemukan. Admin perlu membuat profile untuk user ini.",
+          "Akun belum terdaftar. Hubungi admin proyek.",
       },
     };
   }
@@ -375,7 +375,7 @@ async function getActionContext(): Promise<ActionContextResult> {
       context: null,
       error: {
         status: "error",
-        message: "Profile aplikasi tidak aktif. Hubungi admin proyek.",
+        message: "Akses akun tidak aktif. Hubungi admin proyek.",
       },
     };
   }
@@ -475,7 +475,8 @@ async function getKosDataQualityStatus(
   if (error) {
     return {
       status: null,
-      error: `Gagal memeriksa duplikasi nama kos. ${error.message}`,
+      error:
+        "Nama kos belum dapat diperiksa. Periksa kembali isian, lalu coba lagi.",
     };
   }
 
@@ -553,7 +554,7 @@ async function writeAuditLog(
     return null;
   }
 
-  return `Namun audit log gagal dicatat: ${error.message}`;
+  return "Namun riwayat aktivitas belum tercatat. Hubungi admin jika perlu.";
 }
 
 function revalidateCrudPaths() {
@@ -573,8 +574,8 @@ function toFriendlyDatabaseError(
   }
 
   if (message.toLowerCase().includes("row-level security")) {
-    return `${fallback} Akses ditolak oleh RLS Supabase. Pastikan role user sesuai.`;
+    return `${fallback} Akses Anda tidak memiliki izin untuk tindakan ini.`;
   }
 
-  return `${fallback} ${message}`;
+  return `${fallback} Periksa kembali isian, lalu coba lagi.`;
 }

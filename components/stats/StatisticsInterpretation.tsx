@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { formatMeters, formatPercent } from "@/lib/format/statistics";
 import {
-  MEASUREMENT_METHOD,
-  ROUTE_MODE,
+  MEASUREMENT_METHOD_LABEL,
+  ROUTE_MODE_LABEL,
   TARGET_DESTINATION,
 } from "@/lib/constants";
 import type { DescriptiveStatistics } from "@/types/statistics";
@@ -28,7 +28,7 @@ export function StatisticsInterpretation({
       <CardHeader>
         <CardTitle>Interpretasi Akademik</CardTitle>
         <CardDescription>
-          Narasi otomatis berbasis statistik deskriptif data kos aktif.
+          Ringkasan berdasarkan statistik deskriptif data kos aktif.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,7 +74,7 @@ function buildInterpretation(stats: DescriptiveStatistics): string[] {
       stats.max,
     )}, dengan IQR sebesar ${formatMeters(
       stats.iqr,
-    )}. Pengukuran tetap menggunakan ${MEASUREMENT_METHOD}, mode rute ${ROUTE_MODE}, dan variabel yang dianalisis adalah jarak kos dalam meter.`,
+    )}. Pengukuran tetap menggunakan ${MEASUREMENT_METHOD_LABEL}, mode rute ${ROUTE_MODE_LABEL}, dan variabel yang dianalisis adalah jarak kos dalam meter.`,
     "Interpretasi ini berlaku untuk unit observasi kos-kosan. Hasil ini tidak menyimpulkan sebaran tempat tinggal mahasiswa atau jumlah mahasiswa pada jarak tertentu.",
   ];
 }

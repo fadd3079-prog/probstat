@@ -31,9 +31,9 @@ export function PlaceholderPage({
       <section className="col-span-8">
         <Card className="border-slate-200 bg-white shadow-sm">
           <CardHeader>
-            <CardTitle>Milestone Scope</CardTitle>
+            <CardTitle>Ruang Lingkup Halaman</CardTitle>
             <CardDescription>
-              Halaman ini sudah masuk struktur protected dashboard.
+              Bagian ini disiapkan untuk melengkapi analisis penelitian.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types/users";
 
@@ -58,7 +59,8 @@ function mapProfile(row: ProfileRow): UserProfile {
   };
 }
 
-export async function getDashboardAuthState(): Promise<DashboardAuthState> {
+export const getDashboardAuthState = cache(
+  async function getDashboardAuthState(): Promise<DashboardAuthState> {
   const supabase = await createClient();
 
   if (!supabase) {
@@ -106,4 +108,5 @@ export async function getDashboardAuthState(): Promise<DashboardAuthState> {
     profile: mappedProfile,
     email: user?.email ?? null,
   };
-}
+  },
+);

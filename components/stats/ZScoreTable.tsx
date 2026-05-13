@@ -34,7 +34,7 @@ export function ZScoreTable({ records }: ZScoreTableProps) {
             </CardDescription>
           </div>
           <Badge variant="outline" className="border-slate-200 text-slate-600">
-            sample sd
+            Simpangan baku sampel
           </Badge>
         </div>
       </CardHeader>
@@ -42,26 +42,26 @@ export function ZScoreTable({ records }: ZScoreTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">No</TableHead>
+              <TableHead className="w-16 text-right">No</TableHead>
               <TableHead>Nama Kos</TableHead>
-              <TableHead>Jarak Meter</TableHead>
-              <TableHead>Z-Score</TableHead>
+              <TableHead className="text-right">Jarak (m)</TableHead>
+              <TableHead className="text-right">Z-Score</TableHead>
               <TableHead>Interpretasi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {records.map((record, index) => (
               <TableRow key={record.id}>
-                <TableCell className="font-mono text-slate-500">
+                <TableCell className="text-right font-mono text-slate-500">
                   {index + 1}
                 </TableCell>
                 <TableCell className="font-medium text-slate-900">
                   {record.name}
                 </TableCell>
-                <TableCell className="font-mono text-slate-900">
+                <TableCell className="text-right font-mono text-slate-900">
                   {formatMeters(record.distance, 0)}
                 </TableCell>
-                <TableCell className="font-mono text-slate-900">
+                <TableCell className="text-right font-mono text-slate-900">
                   {formatZScore(record.zScore)}
                 </TableCell>
                 <TableCell>{getZScoreInterpretation(record.zScore)}</TableCell>

@@ -31,17 +31,17 @@ export default async function DataKosPage() {
           <div>
             <p className="text-sm font-medium text-slate-500">Data Kos</p>
             <h1 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-              Raw Data Jarak Kos
+              Data Kos
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              Tabel ini menampilkan data kos aktif sebagai sumber utama
-              dashboard, statistik, dan audit. Normal data entry dilakukan dari
-              web UI setelah deploy, bukan dari SQL editor.
+              Daftar kos yang sudah masuk ke dalam dataset penelitian.
             </p>
           </div>
-          <Badge variant="outline" className="border-slate-300 text-slate-600">
-            {kosResult.data.length} data aktif
-          </Badge>
+          {!kosResult.error ? (
+            <Badge variant="outline" className="border-slate-300 text-slate-600">
+              {kosResult.data.length} data aktif
+            </Badge>
+          ) : null}
         </div>
       </section>
 
@@ -49,21 +49,23 @@ export default async function DataKosPage() {
         <section className="col-span-12">
           <Alert variant="destructive">
             <ShieldAlert className="size-4" aria-hidden="true" />
-            <AlertTitle>Data kos gagal dimuat</AlertTitle>
+            <AlertTitle>Data kos belum dapat dimuat</AlertTitle>
             <AlertDescription>
-              {kosResult.error}. Pastikan environment Supabase di Vercel sudah
-              benar dan user memiliki akses sesuai RLS.
+              Coba muat ulang halaman atau hubungi admin jika masalah
+              berlanjut.
             </AlertDescription>
           </Alert>
         </section>
       ) : null}
 
       <section className="col-span-12">
-        {profile && kosResult.data.length > 0 ? (
-          <DataKosTable profile={profile} records={kosResult.data} />
-        ) : (
-          <EmptyDataKosState canCreate={canCreateKosData(profile?.role)} />
-        )}
+        {!kosResult.error ? (
+          profile && kosResult.data.length > 0 ? (
+            <DataKosTable profile={profile} records={kosResult.data} />
+          ) : (
+            <EmptyDataKosState canCreate={canCreateKosData(profile?.role)} />
+          )
+        ) : null}
       </section>
     </div>
   );
@@ -79,8 +81,8 @@ function EmptyDataKosState({
       <CardHeader>
         <CardTitle>Belum ada data kos.</CardTitle>
         <CardDescription>
-          Data yang dibuat dari halaman Input Data akan muncul di tabel ini dan
-          langsung memengaruhi KPI dashboard.
+          Belum ada data kos. Tambahkan data terlebih dahulu melalui halaman
+          Input Data.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,11 +93,10 @@ function EmptyDataKosState({
               aria-hidden="true"
             />
             <p className="mt-4 text-sm font-medium text-slate-900">
-              Raw data masih kosong
+              Belum ada data kos.
             </p>
             <p className="mt-2 text-sm text-slate-500">
-              Gunakan dashboard produksi Vercel untuk memasukkan data kos real
-              agar audit log dan session user tercatat konsisten.
+              Tambahkan data terlebih dahulu melalui halaman Input Data.
             </p>
             {canCreate ? (
               <Button asChild className="mt-5">
@@ -106,7 +107,7 @@ function EmptyDataKosState({
               </Button>
             ) : (
               <p className="mt-5 text-sm font-medium text-amber-700">
-                Role viewer tidak dapat membuat data kos.
+                Akses ini tidak dapat menambahkan data kos.
               </p>
             )}
           </div>

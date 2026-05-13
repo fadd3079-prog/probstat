@@ -26,8 +26,8 @@ export function DataRequirementNotice({ n }: DataRequirementNoticeProps) {
       <AlertCircle className="size-4 text-amber-700" aria-hidden="true" />
       <AlertTitle>Data masih sementara</AlertTitle>
       <AlertDescription>
-        Jumlah data masih kurang dari target minimal 30 kos, sehingga hasil
-        analisis masih bersifat sementara.
+        Jumlah data masih kurang dari target 30 kos. Hasil analisis sementara
+        dan dapat berubah saat data bertambah.
       </AlertDescription>
     </Alert>
   );

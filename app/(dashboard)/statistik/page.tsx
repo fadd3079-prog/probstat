@@ -22,13 +22,13 @@ import {
   detectIqrOutliers,
 } from "@/lib/statistics";
 import {
-  fetchActiveKosData,
+  fetchActiveKosDistanceData,
   toDistanceObservationsFromKosData,
 } from "@/lib/kos/fetch-kos-data";
 import { TARGET_DESTINATION } from "@/lib/constants";
 
 export default async function StatistikPage() {
-  const { data: kosData, error } = await fetchActiveKosData();
+  const { data: kosData, error } = await fetchActiveKosDistanceData();
   const observations = toDistanceObservationsFromKosData(kosData);
   const descriptiveStats = calculateDescriptiveStatistics(observations);
   const zScoreResult = calculateZScores(observations);
@@ -43,12 +43,11 @@ export default async function StatistikPage() {
               Statistik Deskriptif
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-              Analisis Jarak Kos ke Gerbang FT Unsoed
+              Statistik Deskriptif
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              Perhitungan menggunakan data kos aktif dengan variabel{" "}
-              <span className="font-medium text-slate-900">jarak_meter</span>{" "}
-              menuju {TARGET_DESTINATION}.
+              Ringkasan ukuran statistik dari data jarak kos yang sudah
+              dikumpulkan menuju {TARGET_DESTINATION}.
             </p>
           </div>
           <Badge variant="outline" className="border-slate-300 text-slate-600">
@@ -63,18 +62,20 @@ export default async function StatistikPage() {
             <ShieldAlert className="size-4" aria-hidden="true" />
             <AlertTitle>Data statistik gagal dimuat</AlertTitle>
             <AlertDescription>
-              {error}. Pastikan Supabase aktif dan user memiliki akses baca ke
-              tabel kos_data.
+              Data belum dapat dimuat. Coba muat ulang halaman atau hubungi
+              admin jika masalah berlanjut.
             </AlertDescription>
           </Alert>
         </section>
       ) : null}
 
-      {descriptiveStats.n === 0 ? (
+      {!error && descriptiveStats.n === 0 ? (
         <section className="col-span-12">
           <EmptyStatisticsState />
         </section>
-      ) : (
+      ) : null}
+
+      {!error && descriptiveStats.n > 0 ? (
         <>
           <section className="col-span-12">
             <DataRequirementNotice n={descriptiveStats.n} />
@@ -96,7 +97,7 @@ export default async function StatistikPage() {
             <ZScoreTable records={zScoreResult.records} />
           </section>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -108,7 +109,7 @@ function EmptyStatisticsState() {
         <CardTitle>Belum ada data kos.</CardTitle>
         <CardDescription>
           Statistik deskriptif, z-score, dan analisis outlier akan muncul
-          setelah raw data kos dimasukkan.
+          setelah data kos dimasukkan.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -123,7 +124,7 @@ function EmptyStatisticsState() {
             </p>
             <p className="mt-2 text-sm text-slate-500">
               Tambahkan data kos dengan jarak meter yang diukur manual dari
-              Google Maps mode motor menuju titik acuan penelitian.
+              Google Maps dengan mode rute motor menuju titik acuan penelitian.
             </p>
             <Button asChild className="mt-5">
               <Link href="/input">

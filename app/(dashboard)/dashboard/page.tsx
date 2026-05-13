@@ -22,12 +22,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatMeters, formatNumber } from "@/lib/format/statistics";
-import { fetchActiveKosData, toDistanceObservationsFromKosData } from "@/lib/kos/fetch-kos-data";
+import {
+  fetchActiveKosDistanceData,
+  toDistanceObservationsFromKosData,
+} from "@/lib/kos/fetch-kos-data";
 import { MIN_SAMPLE_SIZE } from "@/lib/constants";
 import { calculateDescriptiveStatistics } from "@/lib/statistics";
 
 export default async function DashboardPage() {
-  const { data: kosData, error } = await fetchActiveKosData();
+  const { data: kosData, error } = await fetchActiveKosDistanceData();
   const observations = toDistanceObservationsFromKosData(kosData);
   const stats = calculateDescriptiveStatistics(observations);
   const reviewCount = kosData.filter(
@@ -69,24 +72,30 @@ export default async function DashboardPage() {
         <div className="flex items-start justify-between gap-6">
           <div>
             <p className="text-sm font-medium text-slate-500">
-              Dashboard Analisis Jarak Kos FT Unsoed
+              Dashboard Jarak Kos FT Unsoed
             </p>
             <h1 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-              Jarak Kos-kosan Mahasiswa di Sekitar FT Unsoed ke Gerbang Kampus
+              Dashboard Analisis Jarak Kos
             </h1>
+            <p className="mt-2 max-w-3xl text-sm text-slate-600">
+              Ringkasan data jarak kos-kosan di sekitar FT Unsoed menuju
+              gerbang kampus.
+            </p>
           </div>
-          <Badge
-            variant="outline"
-            className={
-              stats.n >= MIN_SAMPLE_SIZE
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-slate-300 text-slate-600"
-            }
-          >
-            {stats.n >= MIN_SAMPLE_SIZE
-              ? "Target awal terpenuhi"
-              : "Dataset belum final"}
-          </Badge>
+          {!error ? (
+            <Badge
+              variant="outline"
+              className={
+                stats.n >= MIN_SAMPLE_SIZE
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-slate-300 text-slate-600"
+              }
+            >
+              {stats.n >= MIN_SAMPLE_SIZE
+                ? "Target awal terpenuhi"
+                : "Dataset belum final"}
+            </Badge>
+          ) : null}
         </div>
       </section>
 
@@ -95,98 +104,106 @@ export default async function DashboardPage() {
           <Alert variant="destructive">
             <AlertTriangle className="size-4" aria-hidden="true" />
             <AlertTitle>Dashboard gagal memuat data kos</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              Data belum dapat dimuat. Coba muat ulang halaman atau hubungi
+              admin jika masalah berlanjut.
+            </AlertDescription>
           </Alert>
         </section>
       ) : null}
 
-      {kpiItems.map((item) => (
-        <StatCard key={item.label} {...item} />
-      ))}
+      {!error ? (
+        <>
+          {kpiItems.map((item) => (
+            <StatCard key={item.label} {...item} />
+          ))}
 
-      <section className="col-span-5">
-        <MethodologyCard />
-      </section>
+          <section className="col-span-5">
+            <MethodologyCard />
+          </section>
 
-      <section className="col-span-7">
-        <Card className="h-full border-slate-200 bg-white shadow-sm">
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <CardTitle>Ringkasan Dataset Aktif</CardTitle>
-                <CardDescription>
-                  Raw data kos aktif menjadi sumber seluruh statistik turunan.
-                </CardDescription>
-              </div>
-              <Badge
-                variant="outline"
-                className={
-                  reviewCount > 0
-                    ? "border-amber-200 text-amber-700"
-                    : "border-emerald-200 text-emerald-700"
-                }
-              >
-                {reviewCount > 0
-                  ? `${formatNumber(reviewCount, 0)} perlu review`
-                  : "Data valid"}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {stats.n === 0 ? (
-              <div className="grid min-h-56 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
-                <div className="max-w-sm text-center">
-                  <Database
-                    className="mx-auto size-10 text-slate-400"
-                    aria-hidden="true"
-                  />
-                  <p className="mt-3 text-sm font-medium text-slate-800">
-                    Belum ada data kos aktif.
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Setelah data dimasukkan, dashboard akan menampilkan KPI
-                    jarak, statistik deskriptif, dan status target sampel.
-                  </p>
-                  <Button asChild variant="outline" className="mt-4">
-                    <Link href="/input">
-                      Buka Input Data
-                      <ArrowRight className="size-4" aria-hidden="true" />
-                    </Link>
-                  </Button>
+          <section className="col-span-7">
+            <Card className="h-full border-slate-200 bg-white shadow-sm">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>Ringkasan Dataset Aktif</CardTitle>
+                    <CardDescription>
+                      Data kos aktif menjadi dasar perhitungan ringkasan.
+                    </CardDescription>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={
+                      reviewCount > 0
+                        ? "border-amber-200 text-amber-700"
+                        : "border-emerald-200 text-emerald-700"
+                    }
+                  >
+                    {reviewCount > 0
+                      ? `${formatNumber(reviewCount, 0)} perlu ditinjau`
+                      : "Data valid"}
+                  </Badge>
                 </div>
-              </div>
-            ) : (
-              <div className="grid min-h-56 content-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-5">
-                <div className="grid grid-cols-3 gap-4">
-                  <DatasetSummaryItem
-                    label="Jarak terdekat"
-                    value={formatMeters(stats.min)}
-                  />
-                  <DatasetSummaryItem
-                    label="Jarak terjauh"
-                    value={formatMeters(stats.max)}
-                  />
-                  <DatasetSummaryItem
-                    label="Outlier IQR"
-                    value={formatNumber(stats.outliers.length, 0)}
-                  />
-                </div>
-                <p className="text-sm leading-6 text-slate-600">
-                  Dataset ini menganalisis jarak kos-kosan sebagai unit
-                  observasi. Hasil statistik tidak mewakili jumlah mahasiswa
-                  yang tinggal pada jarak tertentu.
-                </p>
-                <Button asChild variant="outline" className="w-fit">
-                  <Link href="/statistik">
-                    Lihat Statistik Lengkap
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+              </CardHeader>
+              <CardContent>
+                {stats.n === 0 ? (
+                  <div className="grid min-h-56 place-items-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                    <div className="max-w-sm text-center">
+                      <Database
+                        className="mx-auto size-10 text-slate-400"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-3 text-sm font-medium text-slate-800">
+                        Belum ada data kos aktif.
+                      </p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Setelah data dimasukkan, dashboard akan menampilkan
+                        ringkasan jarak, statistik deskriptif, dan status
+                        target sampel.
+                      </p>
+                      <Button asChild variant="outline" className="mt-4">
+                        <Link href="/input">
+                          Tambah Data Kos
+                          <ArrowRight className="size-4" aria-hidden="true" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid min-h-56 content-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-5">
+                    <div className="grid grid-cols-3 gap-4">
+                      <DatasetSummaryItem
+                        label="Jarak terdekat"
+                        value={formatMeters(stats.min)}
+                      />
+                      <DatasetSummaryItem
+                        label="Jarak terjauh"
+                        value={formatMeters(stats.max)}
+                      />
+                      <DatasetSummaryItem
+                        label="Outlier IQR"
+                        value={formatNumber(stats.outliers.length, 0)}
+                      />
+                    </div>
+                    <p className="text-sm leading-6 text-slate-600">
+                      Dataset ini menganalisis jarak kos-kosan sebagai unit
+                      observasi. Hasil statistik tidak mewakili jumlah
+                      mahasiswa yang tinggal pada jarak tertentu.
+                    </p>
+                    <Button asChild variant="outline" className="w-fit">
+                      <Link href="/statistik">
+                        Lihat Statistik Lengkap
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }

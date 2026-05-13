@@ -16,7 +16,7 @@ export function createClient(): SupabaseClient<Database> {
 
   if (!hasSupabasePublicConfig(config)) {
     throw new Error(
-      "Supabase browser client is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      "Browser client is not configured. Set the public application environment variables."
     );
   }
 

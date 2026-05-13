@@ -19,8 +19,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { MEASUREMENT_METHOD, ROUTE_MODE, TARGET_DESTINATION } from "@/lib/constants";
+import {
+  MEASUREMENT_METHOD_LABEL,
+  ROUTE_MODE_LABEL,
+  TARGET_DESTINATION,
+} from "@/lib/constants";
 import {
   emptyKosCrudActionState,
   type KosCrudActionState,
@@ -85,6 +90,10 @@ export function KosDataForm({
     defaultValues,
   });
   const isDisabled = Boolean(disabledReason) || isPending;
+  const defaultSubmitLabel =
+    submitLabel ?? (mode === "edit" ? "Simpan Perubahan" : "Simpan Data Kos");
+  const pendingSubmitLabel =
+    mode === "edit" ? "Memperbarui..." : "Menyimpan...";
 
   useEffect(() => {
     reset(defaultValues);
@@ -156,7 +165,7 @@ export function KosDataForm({
           error={
             errors.namaKos?.message ?? state.fieldErrors?.namaKos?.join(", ")
           }
-          helper="Nama kos akan otomatis dirapikan, contoh: wisma yolandaa menjadi Wisma Yolandaa."
+          helper='Nama kos akan dirapikan otomatis, misalnya "wisma yolandaa" menjadi "Wisma Yolandaa".'
           label="Nama Kos"
           name="namaKos"
         >
@@ -188,7 +197,7 @@ export function KosDataForm({
             errors.jarakMeter?.message ??
             state.fieldErrors?.jarakMeter?.join(", ")
           }
-          label="Jarak Meter"
+          label="Jarak (Meter)"
           name="jarakMeter"
         >
           <Input
@@ -209,7 +218,7 @@ export function KosDataForm({
             errors.googleMapsUrl?.message ??
             state.fieldErrors?.googleMapsUrl?.join(", ")
           }
-          label="Google Maps URL"
+          label="Tautan Google Maps"
           name="googleMapsUrl"
         >
           <Input
@@ -240,17 +249,22 @@ export function KosDataForm({
       </FieldShell>
 
       <div className="grid grid-cols-3 gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <ReadonlyMethodItem label="Mode rute" value={ROUTE_MODE} />
+        <ReadonlyMethodItem label="Mode rute" value={ROUTE_MODE_LABEL} />
         <ReadonlyMethodItem label="Titik tujuan" value={TARGET_DESTINATION} />
-        <ReadonlyMethodItem label="Metode ukur" value={MEASUREMENT_METHOD} />
+        <ReadonlyMethodItem label="Metode ukur" value={MEASUREMENT_METHOD_LABEL} />
       </div>
 
       <div className="flex items-center justify-end gap-3">
         <p className="text-sm text-slate-500">
-          Data akan tersimpan ke Supabase menggunakan sesi user yang login.
+          {isPending
+            ? "Mohon tunggu sebentar..."
+            : "Pastikan jarak diambil dari Google Maps dengan titik tujuan yang sama."}
         </p>
-        <Button disabled={isDisabled} type="submit">
-          {isPending ? "Menyimpan..." : submitLabel ?? "Simpan Data Kos"}
+        <Button aria-busy={isPending} disabled={isDisabled} type="submit">
+          {isPending ? (
+            <LoadingSpinner className="size-3.5" label={pendingSubmitLabel} />
+          ) : null}
+          {isPending ? pendingSubmitLabel : defaultSubmitLabel}
         </Button>
       </div>
     </form>

@@ -56,44 +56,44 @@ export function DescriptiveStatsCards({ stats }: DescriptiveStatsCardsProps) {
   ];
   const rows = [
     ["Jumlah data", formatNumber(stats.n, 0), "Banyak sampel kos aktif"],
-    ["Sum", formatMeters(stats.sum), "Total seluruh jarak meter"],
+    ["Jumlah total", formatMeters(stats.sum), "Total seluruh jarak meter"],
     ["Minimum", formatMeters(stats.min), "Jarak kos terdekat"],
-    ["Maximum", formatMeters(stats.max), "Jarak kos terjauh"],
-    ["Range", formatMeters(stats.range), "Maximum dikurangi minimum"],
-    ["Mean", formatMeters(stats.mean), "Rata-rata aritmetika"],
+    ["Maksimum", formatMeters(stats.max), "Jarak kos terjauh"],
+    ["Rentang", formatMeters(stats.range), "Jarak maksimum dikurangi minimum"],
+    ["Rata-rata", formatMeters(stats.mean), "Rata-rata aritmetika"],
     ["Median", formatMeters(stats.median), "Nilai tengah data terurut"],
-    ["Raw mode", formatRawMode(stats), "Modus jarak mentah jika ada"],
+    ["Modus data", formatRawMode(stats), "Nilai jarak yang paling sering muncul"],
     ["Q1", formatMeters(stats.q1), "Kuartil pertama"],
     ["Q2", formatMeters(stats.q2), "Kuartil kedua atau median"],
     ["Q3", formatMeters(stats.q3), "Kuartil ketiga"],
     ["IQR", formatMeters(stats.iqr), "Q3 dikurangi Q1"],
     [
-      "Sample variance",
+      "Varians sampel",
       formatNumber(stats.sampleVariance),
       "Varians sampel, pembagi n - 1",
     ],
     [
-      "Sample standard deviation",
+      "Standar deviasi sampel",
       formatMeters(stats.sampleStandardDeviation),
       "Akar varians sampel",
     ],
     [
-      "Population variance",
+      "Varians populasi",
       formatNumber(stats.populationVariance),
       "Varians populasi, pembagi n",
     ],
     [
-      "Population standard deviation",
+      "Standar deviasi populasi",
       formatMeters(stats.populationStandardDeviation),
       "Akar varians populasi",
     ],
     [
-      "Coefficient of variation",
+      "Koefisien variasi",
       formatPercent(stats.coefficientOfVariation),
       "Standar deviasi sampel dibanding mean",
     ],
     [
-      "Outlier count",
+      "Jumlah outlier",
       formatNumber(stats.outliers.length, 0),
       "Data di luar batas IQR",
     ],
@@ -126,12 +126,12 @@ export function DescriptiveStatsCards({ stats }: DescriptiveStatsCardsProps) {
             <div>
               <CardTitle>Ringkasan Statistik Deskriptif</CardTitle>
               <CardDescription>
-                Semua nilai dihitung dari raw data kos aktif, bukan angka yang
-                disimpan permanen.
+                Semua nilai dihitung dari data kos aktif yang sudah
+                dikumpulkan.
               </CardDescription>
             </div>
             <Badge variant="outline" className="border-slate-200 text-slate-600">
-              jarak_meter
+              Jarak meter
             </Badge>
           </div>
         </CardHeader>
@@ -140,7 +140,7 @@ export function DescriptiveStatsCards({ stats }: DescriptiveStatsCardsProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Ukuran</TableHead>
-                <TableHead>Nilai</TableHead>
+                <TableHead className="text-right">Nilai</TableHead>
                 <TableHead>Catatan</TableHead>
               </TableRow>
             </TableHeader>
@@ -150,7 +150,7 @@ export function DescriptiveStatsCards({ stats }: DescriptiveStatsCardsProps) {
                   <TableCell className="font-medium text-slate-900">
                     {label}
                   </TableCell>
-                  <TableCell className="font-mono text-slate-900">
+                  <TableCell className="text-right font-mono text-slate-900">
                     {value}
                   </TableCell>
                   <TableCell>{note}</TableCell>
@@ -166,7 +166,7 @@ export function DescriptiveStatsCards({ stats }: DescriptiveStatsCardsProps) {
 
 function formatRawMode(stats: DescriptiveStatistics): string {
   if (stats.modeRaw.length === 0) {
-    return "Tidak ada modus raw";
+    return "Tidak ada modus";
   }
 
   return stats.modeRaw.map((value) => formatMeters(value)).join(", ");

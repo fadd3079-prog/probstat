@@ -1,11 +1,27 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { KosDataDbRow, KosDataRecord } from "@/types/kos";
+import type {
+  DataQualityStatus,
+  KosDataDbRow,
+  KosDataRecord,
+} from "@/types/kos";
 import type { DistanceObservation } from "@/types/statistics";
 
 export type FetchActiveKosDataResult = Readonly<{
   data: readonly KosDataRecord[];
+  error: string | null;
+}>;
+
+export type KosDistanceSummaryRecord = Readonly<{
+  id: string;
+  namaKos: string;
+  jarakMeter: number;
+  dataQualityStatus: DataQualityStatus;
+}>;
+
+export type FetchActiveKosDistanceDataResult = Readonly<{
+  data: readonly KosDistanceSummaryRecord[];
   error: string | null;
 }>;
 
@@ -29,13 +45,20 @@ const KOS_DATA_SELECT = `
   updated_at
 `;
 
+const KOS_DISTANCE_SELECT = `
+  id,
+  nama_kos,
+  jarak_meter,
+  data_quality_status
+`;
+
 export async function fetchActiveKosData(): Promise<FetchActiveKosDataResult> {
   const supabase = await createClient();
 
   if (!supabase) {
     return {
       data: [],
-      error: "Supabase belum dikonfigurasi.",
+      error: "Konfigurasi aplikasi belum lengkap.",
     };
   }
 
@@ -55,6 +78,36 @@ export async function fetchActiveKosData(): Promise<FetchActiveKosDataResult> {
 
   return {
     data: (data ?? []).map(mapKosDataRow),
+    error: null,
+  };
+}
+
+export async function fetchActiveKosDistanceData(): Promise<FetchActiveKosDistanceDataResult> {
+  const supabase = await createClient();
+
+  if (!supabase) {
+    return {
+      data: [],
+      error: "Konfigurasi aplikasi belum lengkap.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("kos_data")
+    .select(KOS_DISTANCE_SELECT)
+    .eq("is_deleted", false)
+    .order("jarak_meter", { ascending: true })
+    .order("nama_kos", { ascending: true });
+
+  if (error) {
+    return {
+      data: [],
+      error: error.message,
+    };
+  }
+
+  return {
+    data: (data ?? []).map(mapKosDistanceSummaryRow),
     error: null,
   };
 }
@@ -82,11 +135,25 @@ export function mapKosDataRow(row: KosDataDbRow): KosDataRecord {
 }
 
 export function toDistanceObservationsFromKosData(
-  records: readonly KosDataRecord[],
+  records: readonly Pick<KosDataRecord, "id" | "namaKos" | "jarakMeter">[],
 ): DistanceObservation[] {
   return records.map((record) => ({
     id: record.id,
     name: record.namaKos,
     distance: record.jarakMeter,
   }));
+}
+
+function mapKosDistanceSummaryRow(row: {
+  id: string;
+  nama_kos: string;
+  jarak_meter: number;
+  data_quality_status: DataQualityStatus;
+}): KosDistanceSummaryRecord {
+  return {
+    id: row.id,
+    namaKos: row.nama_kos,
+    jarakMeter: row.jarak_meter,
+    dataQualityStatus: row.data_quality_status,
+  };
 }

@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { formatUserRoleLabel } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/users";
 
@@ -33,11 +34,11 @@ const navigationItems: NavigationItem[] = [
   { label: "Data Kos", href: "/data-kos", icon: TableProperties },
   { label: "Statistik", href: "/statistik", icon: Sigma },
   { label: "Distribusi", href: "/distribusi", icon: BarChart3 },
-  { label: "Normalitas", href: "/normalitas", icon: LineChart },
+  { label: "Uji Normalitas", href: "/normalitas", icon: LineChart },
   { label: "Visualisasi", href: "/visualisasi", icon: Database },
-  { label: "Export", href: "/export", icon: FileDown },
-  { label: "Audit Log", href: "/audit-log", icon: History },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Ekspor", href: "/export", icon: FileDown },
+  { label: "Log Aktivitas", href: "/audit-log", icon: History },
+  { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
 export function DashboardSidebar({ role }: Readonly<{ role: UserRole }>) {
@@ -52,14 +53,14 @@ export function DashboardSidebar({ role }: Readonly<{ role: UserRole }>) {
           </div>
           <div>
             <p className="text-sm font-semibold leading-5 text-slate-950">
-              Kos Distance
+              Dashboard Jarak Kos
             </p>
-            <p className="text-xs text-slate-500">Analytics Dashboard</p>
+            <p className="text-xs text-slate-500">FT Unsoed</p>
           </div>
         </div>
         <div className="mt-4">
           <Badge variant="outline" className="border-slate-200 text-slate-600">
-            Role: {role}
+            Akses: {formatUserRoleLabel(role)}
           </Badge>
         </div>
       </div>
@@ -92,7 +93,7 @@ export function DashboardSidebar({ role }: Readonly<{ role: UserRole }>) {
       <div className="border-t border-slate-200 p-4">
         <div className="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-400">
           <LogOut className="size-4" aria-hidden="true" />
-          <span>Logout tersedia di topbar</span>
+          <span>Keluar tersedia di bagian atas</span>
         </div>
       </div>
     </aside>

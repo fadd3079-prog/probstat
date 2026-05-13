@@ -38,6 +38,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Table,
   TableBody,
@@ -102,7 +103,7 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
       columnHelper.accessor("jarakMeter", {
         header: ({ column }) => (
           <SortButton
-            label="Jarak Meter"
+            label="Jarak (m)"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           />
         ),
@@ -124,7 +125,7 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
         ),
       }),
       columnHelper.accessor("googleMapsUrl", {
-        header: "Maps",
+        header: "Google Maps",
         cell: ({ getValue }) =>
           getValue() ? (
             <Button asChild size="sm" variant="ghost">
@@ -158,11 +159,11 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
           const canMutate = canUpdateKosData(profile.role, profile.id, record);
 
           if (!canMutate) {
-            return <span className="text-xs text-slate-400">Read only</span>;
+            return <span className="text-xs text-slate-400">Hanya lihat</span>;
           }
 
           return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 size="sm"
                 type="button"
@@ -173,18 +174,34 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
                 }}
               >
                 <Edit className="size-3.5" aria-hidden="true" />
-                Edit
+                Ubah
               </Button>
-              <form action={deleteAction}>
+              <form
+                action={deleteAction}
+                onSubmit={(event) => {
+                  const confirmed = window.confirm(
+                    "Hapus data ini dari dataset? Data tidak akan ditampilkan dalam analisis, tetapi riwayat perubahannya tetap tersimpan.",
+                  );
+
+                  if (!confirmed) {
+                    event.preventDefault();
+                  }
+                }}
+              >
                 <input name="id" type="hidden" value={record.id} />
                 <Button
+                  aria-busy={isDeleting}
                   disabled={isDeleting}
                   size="sm"
                   type="submit"
                   variant="destructive"
                 >
-                  <Trash2 className="size-3.5" aria-hidden="true" />
-                  Soft delete
+                  {isDeleting ? (
+                    <LoadingSpinner className="size-3.5" label="Menghapus..." />
+                  ) : (
+                    <Trash2 className="size-3.5" aria-hidden="true" />
+                  )}
+                  {isDeleting ? "Menghapus..." : "Hapus dari Dataset"}
                 </Button>
               </form>
             </div>
@@ -242,8 +259,16 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
       {deleteState.status === "error" ? (
         <Alert variant="destructive">
           <ShieldAlert className="size-4" aria-hidden="true" />
-          <AlertTitle>Gagal soft delete</AlertTitle>
+          <AlertTitle>Gagal menghapus data</AlertTitle>
           <AlertDescription>{deleteState.message}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {isDeleting ? (
+        <Alert className="border-slate-200 bg-slate-50">
+          <LoadingSpinner className="size-4 text-slate-600" />
+          <AlertTitle>Menghapus data kos</AlertTitle>
+          <AlertDescription>Mohon tunggu sebentar...</AlertDescription>
         </Alert>
       ) : null}
 
@@ -254,14 +279,13 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
               <div>
                 <CardTitle>Edit Data Kos</CardTitle>
                 <CardDescription>
-                  Perubahan disimpan melalui Server Action dengan sesi user yang
-                  sedang login.
+                  Periksa kembali perubahan sebelum menyimpan data.
                 </CardDescription>
               </div>
               <Button
                 type="button"
                 variant="outline"
-              onClick={() => setEditingRecord(null)}
+                onClick={() => setEditingRecord(null)}
               >
                 <RotateCcw className="size-4" aria-hidden="true" />
                 Batal
@@ -297,15 +321,14 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
             <div>
               <CardTitle>Tabel Data Kos</CardTitle>
               <CardDescription>
-                Data aktif dari Supabase. Baris yang dihapus secara soft delete
-                tidak ditampilkan.
+                Data yang tampil akan digunakan dalam analisis.
               </CardDescription>
             </div>
             {canCreate ? (
               <Button asChild>
                 <Link href="/input">
                   <Plus className="size-4" aria-hidden="true" />
-                  Tambah Data
+                  Tambah Data Kos
                 </Link>
               </Button>
             ) : null}
@@ -336,7 +359,10 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={getTableHeadClassName(header.column.id)}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -355,7 +381,7 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
                     className="h-28 text-center text-slate-500"
                     colSpan={columns.length}
                   >
-                    Tidak ada data yang cocok dengan filter.
+                    Tidak ada data yang sesuai dengan pencarian.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -369,7 +395,10 @@ export function DataKosTable({ profile, records }: DataKosTableProps) {
                   return (
                     <TableRow key={row.id}>
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          key={cell.id}
+                          className={getTableCellClassName(cell.column.id)}
+                        >
                           {cell.column.id === "no" ? (
                             <span className="font-mono text-slate-500">
                               {displayNumber}
@@ -455,10 +484,10 @@ function formatDateTime(value: string): string {
 
 function formatStatus(status: KosDataRecord["dataQualityStatus"]): string {
   const labels: Record<KosDataRecord["dataQualityStatus"], string> = {
-    duplicate_suspected: "Duplikat?",
-    needs_review: "Review",
+    duplicate_suspected: "Duplikat Diduga",
+    needs_review: "Perlu Ditinjau",
     valid: "Valid",
-    warning: "Warning",
+    warning: "Perlu Dicek",
   };
 
   return labels[status];
@@ -476,4 +505,20 @@ function getStatusBadgeClassName(
   }
 
   return "border-red-200 text-red-700";
+}
+
+function getTableHeadClassName(columnId: string): string {
+  if (["actions", "createdAt", "jarakMeter", "no"].includes(columnId)) {
+    return "text-right";
+  }
+
+  return "";
+}
+
+function getTableCellClassName(columnId: string): string {
+  if (["actions", "createdAt", "jarakMeter", "no"].includes(columnId)) {
+    return "text-right";
+  }
+
+  return "";
 }

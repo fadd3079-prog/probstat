@@ -34,3 +34,15 @@ export function canManageSettings(role: UserRole | null | undefined): boolean {
 export function canViewAuditLogs(role: UserRole | null | undefined): boolean {
   return role === "admin" || role === "member";
 }
+
+export function formatUserRoleLabel(
+  role: UserRole | null | undefined,
+): string {
+  const labels: Record<UserRole, string> = {
+    admin: "Admin",
+    member: "Anggota",
+    viewer: "Pembaca",
+  };
+
+  return role ? labels[role] : "Tidak diketahui";
+}

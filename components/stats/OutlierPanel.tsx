@@ -29,8 +29,8 @@ export function OutlierPanel({ result }: OutlierPanelProps) {
     ["Q1", formatMeters(result.q1)],
     ["Q3", formatMeters(result.q3)],
     ["IQR", formatMeters(result.iqr)],
-    ["Lower fence", formatMeters(result.lowerFence)],
-    ["Upper fence", formatMeters(result.upperFence)],
+    ["Batas bawah", formatMeters(result.lowerFence)],
+    ["Batas atas", formatMeters(result.upperFence)],
     ["Outlier", formatNumber(result.outliers.length, 0)],
   ] as const;
   const hasOutliers = result.outliers.length > 0;
@@ -53,7 +53,7 @@ export function OutlierPanel({ result }: OutlierPanelProps) {
                 : "border-emerald-200 text-emerald-700"
             }
           >
-            {hasOutliers ? "Perlu review" : "Tidak ada outlier"}
+            {hasOutliers ? "Perlu dicek" : "Tidak ada outlier"}
           </Badge>
         </div>
       </CardHeader>
@@ -101,7 +101,7 @@ export function OutlierPanel({ result }: OutlierPanelProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Nama Kos</TableHead>
-              <TableHead>Jarak Meter</TableHead>
+              <TableHead className="text-right">Jarak (m)</TableHead>
               <TableHead>Alasan</TableHead>
             </TableRow>
           </TableHeader>
@@ -109,7 +109,7 @@ export function OutlierPanel({ result }: OutlierPanelProps) {
             {result.outliers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center text-slate-500">
-                  Tidak ada kos yang berada di luar lower fence atau upper fence.
+                  Tidak ada kos yang berada di luar batas bawah atau batas atas.
                 </TableCell>
               </TableRow>
             ) : (
@@ -118,13 +118,13 @@ export function OutlierPanel({ result }: OutlierPanelProps) {
                   <TableCell className="font-medium text-slate-900">
                     {outlier.name}
                   </TableCell>
-                  <TableCell className="font-mono text-slate-900">
+                  <TableCell className="text-right font-mono text-slate-900">
                     {formatMeters(outlier.distance, 0)}
                   </TableCell>
                   <TableCell>
                     {outlier.reason === "below_lower_fence"
-                      ? "Di bawah lower fence"
-                      : "Di atas upper fence"}
+                      ? "Di bawah batas bawah"
+                      : "Di atas batas atas"}
                   </TableCell>
                 </TableRow>
               ))
@@ -142,7 +142,7 @@ function buildOutlierInterpretation(result: IqrOutlierResult): string {
   }
 
   if (result.outliers.length === 0) {
-    return "Berdasarkan metode IQR, seluruh data kos aktif masih berada dalam rentang fence. Hal ini tidak berarti semua jarak sama, hanya tidak ada nilai yang melewati batas outlier IQR.";
+    return "Berdasarkan metode IQR, seluruh data kos aktif masih berada dalam rentang batas outlier. Hal ini tidak berarti semua jarak sama, hanya tidak ada nilai yang melewati batas outlier IQR.";
   }
 
   return `Terdapat ${formatNumber(result.outliers.length, 0)} data kos yang melewati batas IQR. Data tersebut perlu diverifikasi sebagai jarak ekstrem atau kemungkinan kesalahan input, bukan langsung dihapus dari analisis.`;

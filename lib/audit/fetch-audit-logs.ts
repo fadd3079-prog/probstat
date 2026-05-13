@@ -37,7 +37,7 @@ export async function fetchRecentAuditLogs(
   if (!supabase) {
     return {
       data: [],
-      error: "Supabase belum dikonfigurasi.",
+      error: "Konfigurasi aplikasi belum lengkap.",
     };
   }
 
