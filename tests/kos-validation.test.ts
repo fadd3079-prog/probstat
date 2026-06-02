@@ -42,4 +42,55 @@ describe("kos data form validation", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("enforces PRD length and distance boundaries", () => {
+    expect(
+      kosDataFormSchema.safeParse({
+        namaKos: "AB",
+        area: "Balter",
+        jarakMeter: 100,
+        googleMapsUrl: "",
+        catatan: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      kosDataFormSchema.safeParse({
+        namaKos: "123",
+        area: "Balter",
+        jarakMeter: 100,
+        googleMapsUrl: "",
+        catatan: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      kosDataFormSchema.safeParse({
+        namaKos: "Kos Batas",
+        area: "A".repeat(101),
+        jarakMeter: 100,
+        googleMapsUrl: "",
+        catatan: "",
+      }).success,
+    ).toBe(false);
+    expect(
+      kosDataFormSchema.safeParse({
+        namaKos: "Kos Batas",
+        area: "Balter",
+        jarakMeter: 10001,
+        googleMapsUrl: "",
+        catatan: "",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts the maximum valid distance and area length", () => {
+    const result = kosDataFormSchema.safeParse({
+      namaKos: "Kos Batas",
+      area: "A".repeat(100),
+      jarakMeter: 10000,
+      googleMapsUrl: "",
+      catatan: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
 });

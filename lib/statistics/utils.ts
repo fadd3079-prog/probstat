@@ -42,6 +42,8 @@ export function mean(values: readonly number[]): number | null {
   return sum(values) / values.length;
 }
 
+// Uses the common linear interpolation method (R type 7 / Excel PERCENTILE.INC)
+// so quartiles, median, boxplot, and outlier fences stay consistent everywhere.
 export function percentile(
   sortedValues: readonly number[],
   percentileValue: number,

@@ -1,5 +1,6 @@
 import { LogOut, ShieldCheck } from "lucide-react";
 import { logout } from "@/app/(dashboard)/actions";
+import { GroupMembersMenu } from "@/components/dashboard/group-members-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatUserRoleLabel } from "@/lib/auth/roles";
@@ -22,6 +23,7 @@ export function DashboardTopbar({
         <p className="text-sm font-semibold text-slate-950">{RESEARCH_TITLE}</p>
       </div>
       <div className="flex items-center gap-3">
+        <GroupMembersMenu />
         <Badge variant="secondary" className="gap-1 bg-emerald-50 text-emerald-700">
           <ShieldCheck className="size-3" aria-hidden="true" />
           Dataset Aktif

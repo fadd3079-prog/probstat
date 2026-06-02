@@ -15,6 +15,20 @@ import {
 } from "../lib/statistics";
 
 describe("descriptive statistics", () => {
+  it("calculates deterministic dataset A correctly", () => {
+    const dataset = [150, 170, 263, 393, 411, 412, 446, 534, 554, 557, 648, 698];
+    const result = calculateDescriptiveStatistics(dataset);
+
+    expect(result.n).toBe(12);
+    expect(result.min).toBe(150);
+    expect(result.max).toBe(698);
+    expect(result.range).toBe(548);
+    expect(result.sum).toBe(5236);
+    expect(result.mean).toBeCloseTo(436.333333);
+    expect(result.median).toBe(429);
+    expect(result.q2).toBe(result.median);
+  });
+
   it("calculates central tendency, dispersion, raw mode, and IQR fences", () => {
     const result = calculateDescriptiveStatistics([100, 200, 300, 300, 500]);
 
@@ -53,11 +67,23 @@ describe("descriptive statistics", () => {
     expect(result.outliers).toEqual([]);
   });
 
+  it("handles constant data safely", () => {
+    const result = calculateDescriptiveStatistics([100, 100, 100, 100]);
+
+    expect(result.n).toBe(4);
+    expect(result.mean).toBe(100);
+    expect(result.median).toBe(100);
+    expect(result.sampleVariance).toBe(0);
+    expect(result.sampleStandardDeviation).toBe(0);
+    expect(result.outliers).toEqual([]);
+  });
+
   it("handles n = 1 safely", () => {
-    const result = calculateDescriptiveStatistics([250]);
+    const result = calculateDescriptiveStatistics([500]);
 
     expect(result.n).toBe(1);
-    expect(result.mean).toBe(250);
+    expect(result.mean).toBe(500);
+    expect(result.median).toBe(500);
     expect(result.sampleVariance).toBeNull();
     expect(result.sampleStandardDeviation).toBeNull();
     expect(result.populationVariance).toBe(0);
@@ -66,6 +92,35 @@ describe("descriptive statistics", () => {
 });
 
 describe("frequency distribution", () => {
+  it("builds expected manual interval frequencies for dataset A", () => {
+    const result = calculateManualFrequencyDistribution([
+      150, 170, 263, 393, 411, 412, 446, 534, 554, 557, 648, 698,
+    ]);
+
+    expect(result.totalCount).toBe(12);
+    expect(result.intervals.map((interval) => interval.frequency)).toEqual([
+      2, 5, 5, 0, 0, 0, 0, 0, 0,
+    ]);
+    expect(
+      result.intervals.reduce((total, interval) => total + interval.frequency, 0),
+    ).toBe(12);
+    expect(result.hasMultipleModalIntervals).toBe(true);
+  });
+
+  it("puts boundary values in the correct manual intervals", () => {
+    const result = calculateManualFrequencyDistribution([
+      250, 251, 500, 501, 750, 751, 1000, 1001, 1250, 1251, 1500, 1501,
+      1750, 1751, 2000, 2001,
+    ]);
+
+    expect(result.totalCount).toBe(16);
+    expect(result.intervals.map((interval) => interval.frequency)).toEqual([
+      1, 2, 2, 2, 2, 2, 2, 2, 1,
+    ]);
+    expect(result.intervals.at(-1)?.cumulativeFrequency).toBe(16);
+    expect(result.intervals.at(-1)?.cumulativePercentage).toBe(100);
+  });
+
   it("builds the PRD manual interval frequency distribution", () => {
     const result = calculateManualFrequencyDistribution([
       100, 250, 251, 500, 600, 2100,
@@ -96,6 +151,22 @@ describe("frequency distribution", () => {
       result.intervals.reduce((total, interval) => total + interval.frequency, 0),
     ).toBe(5);
   });
+
+  it("covers all values in a Sturges distribution when all distances are equal", () => {
+    const result = calculateSturgesFrequencyDistribution([100, 100, 100, 100]);
+
+    expect(result.totalCount).toBe(4);
+    expect(result.classCount).toBe(1);
+    expect(result.classWidth).toBe(0);
+    expect(result.intervals[0]).toMatchObject({
+      lowerBound: 100,
+      upperBound: 100,
+      frequency: 4,
+    });
+    expect(
+      result.intervals.reduce((total, interval) => total + interval.frequency, 0),
+    ).toBe(4);
+  });
 });
 
 describe("z-score normalization", () => {
@@ -111,11 +182,20 @@ describe("z-score normalization", () => {
   });
 
   it("falls back safely when standard deviation is zero", () => {
-    const result = calculateZScores([5, 5]);
+    const result = calculateZScores([100, 100, 100, 100]);
 
     expect(result.usedFallbackForZeroDeviation).toBe(true);
-    expect(result.records.map((record) => record.zScore)).toEqual([0, 0]);
+    expect(result.records.map((record) => record.zScore)).toEqual([0, 0, 0, 0]);
     expect(result.warning).toContain("simpangan baku 0");
+  });
+
+  it("handles a single value safely", () => {
+    const result = calculateZScores([500]);
+
+    expect(result.mean).toBe(500);
+    expect(result.sampleStandardDeviation).toBeNull();
+    expect(result.usedFallbackForZeroDeviation).toBe(true);
+    expect(result.records[0]?.zScore).toBe(0);
   });
 });
 
@@ -146,6 +226,17 @@ describe("IQR outlier detection", () => {
     expect(result.median).toBe(14);
     expect(result.max).toBe(100);
     expect(result.outliers).toHaveLength(1);
+  });
+
+  it("flags the dataset D extreme distance as an outlier", () => {
+    const result = detectIqrOutliers([100, 120, 130, 140, 150, 160, 1000]);
+
+    expect(result.q1).toBe(125);
+    expect(result.q2).toBe(140);
+    expect(result.q3).toBe(155);
+    expect(result.upperFence).toBe(200);
+    expect(result.outliers).toHaveLength(1);
+    expect(result.outliers[0]?.distance).toBe(1000);
   });
 });
 
@@ -203,6 +294,14 @@ describe("Lilliefors-style normality test", () => {
     expect(result.rows[0]?.zi).toBeNull();
   });
 
+  it("reports insufficient data for constant distances", () => {
+    const result = performLillieforsNormalityTest([100, 100, 100, 100]);
+
+    expect(result.decision).toBe("insufficient_data");
+    expect(result.standardDeviation).toBe(0);
+    expect(result.lHitung).toBeNull();
+  });
+
   it("returns lookup or approximation Ltabel values", () => {
     expect(getLillieforsCriticalValue(5)).toEqual({
       value: 0.337,
@@ -230,5 +329,19 @@ describe("QQ plot data generation", () => {
     expect(result.points[1]?.sampleQuantile).toBe(20);
     expect(result.referenceLine.slope).toBe(10);
     expect(result.referenceLine.intercept).toBe(20);
+  });
+
+  it("keeps QQ plot, normality, frequency, and boxplot counts consistent", () => {
+    const dataset = [150, 170, 263, 393, 411, 412, 446, 534, 554, 557, 648, 698];
+    const descriptive = calculateDescriptiveStatistics(dataset);
+    const frequency = calculateManualFrequencyDistribution(dataset);
+    const normality = performLillieforsNormalityTest(dataset);
+    const qqPlot = generateQqPlotData(dataset);
+    const boxplot = createBoxPlotSummary(dataset);
+
+    expect(frequency.totalCount).toBe(descriptive.n);
+    expect(normality.n).toBe(descriptive.n);
+    expect(qqPlot.points).toHaveLength(descriptive.n);
+    expect(boxplot.outliers).toHaveLength(descriptive.outliers.length);
   });
 });

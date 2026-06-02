@@ -52,11 +52,11 @@ export function calculateSturgesFrequencyDistribution(
   const minimum = distances[0] ?? 0;
   const maximum = distances[distances.length - 1] ?? minimum;
   const range = maximum - minimum;
-  const classCount = Math.max(
-    1,
-    Math.ceil(1 + 3.3 * Math.log10(distances.length)),
-  );
-  const classWidth = Math.max(1, Math.ceil(range / classCount));
+  const classCount =
+    range === 0
+      ? 1
+      : Math.max(1, Math.ceil(1 + 3.3 * Math.log10(distances.length)));
+  const classWidth = range === 0 ? 0 : Math.max(1, Math.ceil(range / classCount));
   const intervals = Array.from({ length: classCount }, (_, index) => {
     const lowerBound = minimum + index * classWidth;
     const isLast = index === classCount - 1;

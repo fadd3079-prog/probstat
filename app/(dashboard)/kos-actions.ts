@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { canCreateKosData } from "@/lib/auth/roles";
 import { MEASUREMENT_METHOD, ROUTE_MODE, TARGET_DESTINATION } from "@/lib/constants";
 import type { KosCrudActionState } from "@/lib/kos/action-state";
+import { determineKosDataQualityStatus } from "@/lib/kos/data-quality";
 import { normalizeAreaName, normalizeKosName } from "@/lib/kos/normalize-text";
 import { kosDataFormSchema, kosRecordIdSchema } from "@/lib/kos/validation";
 import { createClient } from "@/lib/supabase/server";
@@ -58,7 +59,7 @@ export async function createKosDataAction(
 
   const dataQualityStatus = await getKosDataQualityStatus(
     supabase,
-    parsed.data.namaKos,
+    parsed.data,
   );
 
   if (dataQualityStatus.status === null) {
@@ -176,7 +177,7 @@ export async function updateKosDataAction(
 
   const dataQualityStatus = await getKosDataQualityStatus(
     supabase,
-    parsed.data.namaKos,
+    parsed.data,
     idResult.data.id,
   );
 
@@ -464,12 +465,12 @@ type KosDataQualityStatusResult = Readonly<
 
 async function getKosDataQualityStatus(
   supabase: SupabaseServerClient,
-  normalizedKosName: string,
+  values: KosDataFormValues,
   currentRecordId?: string,
 ): Promise<KosDataQualityStatusResult> {
   const { data, error } = await supabase
     .from("kos_data")
-    .select("id, nama_kos")
+    .select("id, nama_kos, google_maps_url")
     .eq("is_deleted", false);
 
   if (error) {
@@ -480,16 +481,20 @@ async function getKosDataQualityStatus(
     };
   }
 
-  const hasDuplicate = (data ?? []).some((record) => {
-    if (record.id === currentRecordId) {
-      return false;
-    }
-
-    return normalizeKosName(record.nama_kos) === normalizedKosName;
-  });
-
   return {
-    status: hasDuplicate ? "duplicate_suspected" : "valid",
+    status: determineKosDataQualityStatus(
+      {
+        namaKos: values.namaKos,
+        jarakMeter: values.jarakMeter,
+        googleMapsUrl: values.googleMapsUrl,
+      },
+      (data ?? []).map((record) => ({
+        id: record.id,
+        namaKos: record.nama_kos,
+        googleMapsUrl: record.google_maps_url,
+      })),
+      currentRecordId,
+    ),
     error: null,
   };
 }
@@ -562,6 +567,9 @@ function revalidateCrudPaths() {
   revalidatePath("/data-kos");
   revalidatePath("/dashboard");
   revalidatePath("/statistik");
+  revalidatePath("/distribusi");
+  revalidatePath("/normalitas");
+  revalidatePath("/visualisasi");
   revalidatePath("/audit-log");
 }
 

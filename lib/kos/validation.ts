@@ -11,19 +11,23 @@ export const kosDataFormSchema = z.object({
   namaKos: z
     .string()
     .trim()
-    .min(2, "Nama kos wajib diisi minimal 2 karakter.")
-    .max(120, "Nama kos maksimal 120 karakter."),
+    .min(3, "Nama kos wajib diisi minimal 3 karakter.")
+    .max(120, "Nama kos maksimal 120 karakter.")
+    .refine(
+      (value) => !/^\d+$/.test(value.replace(/\s+/g, "")),
+      "Nama kos tidak boleh hanya berupa angka.",
+    ),
   area: z
     .string()
     .trim()
-    .max(120, "Area maksimal 120 karakter.")
+    .max(100, "Area maksimal 100 karakter.")
     .optional()
     .transform((value) => value ?? ""),
   jarakMeter: z
     .number("Jarak meter wajib berupa angka.")
     .int("Jarak meter harus berupa bilangan bulat.")
     .min(1, "Jarak meter wajib lebih dari 0.")
-    .max(50000, "Jarak meter terlalu besar untuk konteks penelitian ini."),
+    .max(10000, "Jarak meter maksimal 10000 meter."),
   googleMapsUrl: optionalUrlSchema,
   catatan: z
     .string()
